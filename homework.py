@@ -31,6 +31,7 @@ logging.basicConfig(
 
 logging.info('Бот запущен!')
 
+
 def send_message(bot, message):
     """Функция отправки сообщения."""
     chat_id = TELEGRAM_CHAT_ID
@@ -69,18 +70,18 @@ def check_response(response):
         logging.error('Ответ API не соответствует ожиданиям')
         raise TypeError('Ответ API не соответствует ожиданиям')
     homework = response.get('homeworks')
-    return homework 
+    return homework
 
 
 def parse_status(homework):
     """Проверка информации о конкретной домашней работе."""
-    logging.info(f"Получаем домашнее задание: {homework}")
+    logging.debug(f"Получаем домашнее задание: {homework}")
     homework_name = homework['homework_name']
     homework_status = homework['status']
     verdict = HOMEWORK_STATUSES[homework_status]
-    if homework_status not in HOMEWORK_STATUSES or None:        
+    if homework_status not in HOMEWORK_STATUSES or None:
         logging.error('Отсутствует статус')
-        raise Exception ('Отсутствует статус')
+        raise Exception('Отсутствует статус')
     else:
         logging.info('Список домашних работ получен')
         return f'Изменился статус проверки работы "{homework_name}". {verdict}'
@@ -93,6 +94,7 @@ def check_tokens():
             TELEGRAM_CHAT_ID is None:
         return False
     return True
+
 
 def main():
     """Основная логика работы бота."""
