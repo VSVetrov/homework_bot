@@ -32,7 +32,9 @@ logging.basicConfig(
 
 
 class HomeworkbotException(Exception):
+    """Общий класс для исключений."""
     pass
+
 
 def send_message(bot, message):
     """Функция отправки сообщения."""
@@ -95,9 +97,9 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка наличия токенов."""
-    if (PRACTICUM_TOKEN  is None or
-            TELEGRAM_TOKEN is None or
-            TELEGRAM_CHAT_ID is None):
+    if (PRACTICUM_TOKEN is None
+        or TELEGRAM_TOKEN is None
+        or TELEGRAM_CHAT_ID is None):
         return False
     return True
 
@@ -120,13 +122,14 @@ def main():
             logging.error(message)
             old_message = ''
             if message != old_message:
-                send_message(bot, message) 
+                send_message(bot, message)
                 logging.info('Сообщение с ошибкой отправлено.')
             old_message = message
         else:
             send_message(bot, message)
         finally:
             time.sleep(RETRY_TIME)
-    
+
+
 if __name__ == '__main__':
     main()
