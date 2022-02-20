@@ -33,6 +33,7 @@ logging.basicConfig(
 
 class HomeworkbotException(Exception):
     """Общий класс для исключений."""
+
     pass
 
 
@@ -98,8 +99,8 @@ def parse_status(homework):
 def check_tokens():
     """Проверка наличия токенов."""
     if (PRACTICUM_TOKEN is None
-        or TELEGRAM_TOKEN is None
-        or TELEGRAM_CHAT_ID is None):
+            or TELEGRAM_TOKEN is None
+            or TELEGRAM_CHAT_ID is None):
         return False
     return True
 
