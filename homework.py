@@ -57,7 +57,7 @@ def get_api_answer(current_timestamp):
         if response.status_code != 200:
             message = 'API недоступен: status code is not 200'
             raise HomeworkbotException(message)
-        return response.json()   
+        return response.json()
     except ConnectionError as error:
         message = f'Ошибка обращения к API: {error}'
         raise HomeworkbotException(message)
