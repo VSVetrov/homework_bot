@@ -39,14 +39,12 @@ class HomeworkbotException(Exception):
 
 def send_message(bot, message):
     """Функция отправки сообщения."""
-    chat_id = TELEGRAM_CHAT_ID
     try:
-        bot.send_message(chat_id, text=message)
+        bot.send_message(TELEGRAM_CHAT_ID, text=message)
         logging.info('Сообщение отправлено.')
-    except Exception as error:
+    except telegram.error.BadRequest as error:
         message = f'Ошибка отправки сообщения: {error}'
         logging.error(message)
-        raise HomeworkbotException(message)
 
 
 def get_api_answer(current_timestamp):
@@ -59,12 +57,10 @@ def get_api_answer(current_timestamp):
         if response.status_code != 200:
             message = 'API недоступен: status code is not 200'
             raise HomeworkbotException(message)
+        return response.json()   
     except ConnectionError as error:
         message = f'Ошибка обращения к API: {error}'
-        logging.error(message)
         raise HomeworkbotException(message)
-    try:
-        return response.json()
     except JSONDecodeError:
         raise HomeworkbotException(
             'Ответ должен быть в формате JSON'
@@ -74,13 +70,10 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверка корректности ответа API."""
     if not isinstance(response, dict):
-        logging.error('Ответ API не соответствует ожиданиям')
         raise TypeError('Ответ API не соответствует ожиданиям')
     if 'homeworks' not in response:
-        logging.error('Отсутствует ключ homeworks')
         raise KeyError('Отсутствует ключ homeworks')
     if not isinstance(response['homeworks'], list):
-        logging.error('Ответ API не соответствует ожиданиям')
         raise TypeError('Ответ API не соответствует ожиданиям')
     homework = response.get('homeworks')
     return homework
@@ -113,19 +106,24 @@ def main():
     current_timestamp = int(time.time())
     logging.info('Бот запущен!')
     response = get_api_answer(current_timestamp)
+    last_week = time.localtime(int(time.time()) - 604800)
+    response_last_week = get_api_answer(last_week)
+    homework_last_week = check_response(response_last_week)
+    old_message = ''
     while True:
         try:
             homework = check_response(response)
-            message = parse_status(homework[0])
-            logging.info('Отсутствуют новые статусы')
+            if len(homework) > len(homework_last_week):
+                message = parse_status(homework[0])
+            else:
+                logging.info('Нет ни одной обновленной работы')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
-            old_message = ''
-            if message != old_message:
+            if old_message != message:
                 send_message(bot, message)
                 logging.info('Сообщение с ошибкой отправлено.')
-            old_message = message
+                old_message = message
         else:
             send_message(bot, message)
         finally:
