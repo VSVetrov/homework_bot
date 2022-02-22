@@ -42,7 +42,7 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, text=message)
         logging.info('Сообщение отправлено.')
-    except telegram.error.BadRequest as error:
+    except telegram.error.TelegramError as error:
         message = f'Ошибка отправки сообщения: {error}'
         logging.error(message)
 
@@ -102,18 +102,18 @@ def main():
     """Основная логика работы бота."""
     if not check_tokens():
         logging.critical('Отсутствует обязательная переменная окружения')
+        raise HomeworkbotException(
+            'Отсутствует обязательная переменная окружения'
+        )
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     logging.info('Бот запущен!')
-    response = get_api_answer(current_timestamp)
-    last_week = time.localtime(int(time.time()) - 604800)
-    response_last_week = get_api_answer(last_week)
-    homework_last_week = check_response(response_last_week)
     old_message = ''
     while True:
         try:
+            response = get_api_answer(current_timestamp)
             homework = check_response(response)
-            if len(homework) > len(homework_last_week):
+            if len(homework) > 0:
                 message = parse_status(homework[0])
             else:
                 logging.info('Нет ни одной обновленной работы')
@@ -126,6 +126,8 @@ def main():
                 old_message = message
         else:
             send_message(bot, message)
+            current_timestamp = response['current_date']
+            old_message = ''
         finally:
             time.sleep(RETRY_TIME)
 
