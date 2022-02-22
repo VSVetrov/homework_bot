@@ -115,6 +115,7 @@ def main():
             homework = check_response(response)
             if len(homework) > 0:
                 message = parse_status(homework[0])
+                send_message(bot, message)
             else:
                 logging.info('Нет ни одной обновленной работы')
         except Exception as error:
@@ -125,7 +126,6 @@ def main():
                 logging.info('Сообщение с ошибкой отправлено.')
                 old_message = message
         else:
-            send_message(bot, message)
             current_timestamp = response['current_date']
             old_message = ''
         finally:
